@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 namespace GiftShop.Domain.Entities;
 
-public class ApplicationUser : IdentityUser<long>
+public class ApplicationUser : IdentityUser
 {
     public bool Blocked { get; set; }
 

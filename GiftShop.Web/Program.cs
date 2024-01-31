@@ -3,7 +3,7 @@ using GiftShop.Domain.Entities;
 using GiftShop.Infastructure;
 using GiftShop.Infastructure.Data;
 using Microsoft.AspNetCore.Identity;
-using Swashbuckle.AspNetCore.Filters;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,20 +17,19 @@ builder.Services.AddRepositories();
 builder.Services.Configure<DataProtectionTokenProviderOptions>(opt =>
    opt.TokenLifespan = TimeSpan.FromHours(2));
 
-builder.Services.AddIdentity<ApplicationUser, IdentityRole<long>>()
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConnection"));
+});
+
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
+
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMemoryCache();
 
 var app = builder.Build();
-
-var connectionString = builder.Configuration.GetConnectionString("IdentityConnection");
-if (!string.IsNullOrEmpty(connectionString))
-{
-    builder.Services.AddHealthChecks()
-        .AddSqlServer(connectionString, timeout: TimeSpan.FromSeconds(5));
-}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

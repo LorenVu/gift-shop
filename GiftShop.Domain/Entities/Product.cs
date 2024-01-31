@@ -9,7 +9,7 @@ public class Product : BaseEntity
     [Key]
     [Required]
     [Column("Id")]
-    public int ID { get; set; }
+    public Guid ID { get; set; }
 
     [Required]
     [Column("Name")]
@@ -48,19 +48,19 @@ public class Product : BaseEntity
 
     [Required]
     [Column("Stock")]
-    public int Stock { get; set; }
+    public bool Stock { get; set; }
 
     [Required]
     [Column("CategoryId")]
-    public int CategoryID { get; set; }
+    public Guid CategoryID { get; set; }
 
     [Required]
     [Column("BrandId")]
-    public int BrandID { get; set; }
+    public Guid BrandID { get; set; }
 
     public Category Categories { get; set; } = new Category();
 
     public Brand Brands { get; set; } = new Brand();
 
-    public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
+    public ICollection<Item> Items { get; set; } = new List<Item>();
 }

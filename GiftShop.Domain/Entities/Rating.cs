@@ -3,12 +3,13 @@ using System.ComponentModel.DataAnnotations;
 
 namespace GiftShop.Domain.Entities;
 
+[Table("Ratings")]
 public class Rating
 {
     [Key]
     [Required]
     [Column("Id")]
-    public int ID { get; set; }
+    public Guid ID { get; set; }
 
     [Required]
     [Column("Comment")]
@@ -21,11 +22,12 @@ public class Rating
 
     [Required]
     [Column("UserId")]
-    public long UserID { get; set; }
-    public ApplicationUser User { get; set; } = new ApplicationUser();
+    public Guid UserID { get; set; }
 
     [Required]
     [Column("ProductId")]
-    public int ProductID { get; set; }
+    public Guid ProductID { get; set; }
+
+    public ApplicationUser User { get; set; } = new ApplicationUser();
     public Product Product { get; set; } = new Product();
 }

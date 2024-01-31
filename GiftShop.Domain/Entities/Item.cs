@@ -3,13 +3,13 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GiftShop.Domain.Entities;
 
-[Table("OrderItems")]
-public class OrderItem
+[Table("Items")]
+public class Item
 {
     [Key]
     [Required]
     [Column("Id")]
-    public int ID { get; set; }
+    public Guid ID { get; set; }
 
     [Required]
     [Column("Quantity")]
@@ -21,15 +21,15 @@ public class OrderItem
 
     [Required]
     [Column("OrderId")]
-    public int OrderID { get; set; }
+    public Guid OrderID { get; set; }
 
     [Required]
     [Column("ProductId")]
-    public int ProductID { get; set; }
+    public Guid ProductID { get; set; }
 
     [Required]
     [Column("PromotionId")]
-    public int PromotionID { get; set; }
+    public Guid PromotionID { get; set; }
 
     public Order Order { get; set; } = new Order();
     public Product Product { get; set; } = new Product();

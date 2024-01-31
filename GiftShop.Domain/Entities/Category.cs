@@ -9,7 +9,7 @@ public class Category : BaseEntity
     [Key]
     [Required]
     [Column("Id")]
-    public int ID { get; set; }
+    public Guid ID { get; set; }
 
     [Required]
     [Column("Name")]
@@ -19,4 +19,7 @@ public class Category : BaseEntity
     [Column("Code")]
     [StringLength(100)]
     public string? Code { get; set; }
+
+    public ICollection<Product> Products { get; set; } = new List<Product>();
+
 }

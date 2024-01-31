@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace GiftShop.Domain.Entities;
 
-[Table("RefreshToken")]
+[Table("RefreshTokens")]
 public class RefreshToken
 {
     [Key]
@@ -14,7 +14,9 @@ public class RefreshToken
     public bool Used { get; set; }
     public bool Invalidated { get; set; }
     public bool IsDisable { get; set; }
-    public long UserId { get; set; }
+
+    [Required]
+    public string UserId { get; set; }
 
     [ForeignKey(nameof(UserId))]
     public ApplicationUser User { get; set; } = new ApplicationUser();

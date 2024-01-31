@@ -3,14 +3,13 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GiftShop.Domain.Entities;
 
-[Table("ProductProperties")]
-public class ProductProperty
+[Table("Properties")]
+public class Property
 {
-
     [Key]
     [Required]
     [Column("Id")]
-    public int ID { get; set; }
+    public Guid ID { get; set; }
 
     [Required]
     [Column("Name")]
@@ -23,7 +22,7 @@ public class ProductProperty
 
     [Required]
     [Column("ProductId")]
-    public int ProductID { get; set; }
+    public Guid ProductID { get; set; }
 
     public Product Product { get; set; } = new Product();
 }

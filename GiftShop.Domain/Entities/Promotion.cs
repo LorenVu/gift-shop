@@ -9,7 +9,7 @@ public class Promotion : BaseEntity
     [Key]
     [Required]
     [Column("Id")]
-    public int ID { get; set; }
+    public Guid ID { get; set; }
 
     [Column("Code")]
     [StringLength(100)]

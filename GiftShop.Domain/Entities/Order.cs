@@ -3,13 +3,13 @@ using System.ComponentModel.DataAnnotations;
 
 namespace GiftShop.Domain.Entities;
 
-[Table("Categories")]
+[Table("Orders")]
 public class Order : BaseEntity
 {
     [Key]
     [Required]
     [Column("Id")]
-    public int ID { get; set; }
+    public Guid ID { get; set; }
 
     [Required]
     [Column("Name")]
@@ -40,14 +40,12 @@ public class Order : BaseEntity
 
     [Required]
     [Column("PaymentId")]
-    public int PaymentID { get; set; }
+    public Guid PaymentID { get; set; }
 
     [Column("StatusId")]
-    public int StatusID { get; set; }
+    public Guid StatusID { get; set; }
 
     public ICollection<Payment> Payments { get; set; } = new List<Payment>();
 
-    public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
-
-    public ICollection<OrderStatus> OrderStatus { get; set; } = new List<OrderStatus>();
+    public ICollection<Item> Items { get; set; } = new List<Item>();
 }
