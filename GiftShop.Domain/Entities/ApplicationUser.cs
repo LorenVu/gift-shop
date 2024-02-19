@@ -14,8 +14,6 @@ public class ApplicationUser : IdentityUser
 
     public int RenameCount { get; set; }
 
-    public long UniqueDisplayId { get; set; }
-
     [StringLength(255)]
     public string DeviceID { get; set; } = string.Empty;
 

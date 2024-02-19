@@ -25,7 +25,6 @@ namespace GiftShop.Infastructure.Migrations
             modelBuilder.Entity("GiftShop.Domain.Entities.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("AccessFailedCount")
@@ -100,9 +99,6 @@ namespace GiftShop.Infastructure.Migrations
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
 
-                    b.Property<long>("UniqueDisplayId")
-                        .HasColumnType("bigint");
-
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -116,9 +112,6 @@ namespace GiftShop.Infastructure.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
-
-                    b.HasIndex("UniqueDisplayId")
-                        .IsUnique();
 
                     b.ToTable("Users", (string)null);
                 });
@@ -683,8 +676,8 @@ namespace GiftShop.Infastructure.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("UserId1")
                         .HasColumnType("nvarchar(450)");

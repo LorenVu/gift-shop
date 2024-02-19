@@ -9,9 +9,6 @@ public class UserLog
     [Key]
     public Guid Id { get; set; }
 
-    [Required]
-    public long UserId { get; set; }
-
     [StringLength(20)]
     public string Action { get; set; } = string.Empty;
 
@@ -19,6 +16,9 @@ public class UserLog
     public string Value { get; set; } = string.Empty;
 
     public DateTime UpdatedAt { get; set; }
+
+    [Required]
+    public Guid UserId { get; set; }
 
     public ApplicationUser User { get; set; } = new ApplicationUser();
 }

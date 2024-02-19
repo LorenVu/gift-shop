@@ -26,14 +26,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
-        builder.Entity<ApplicationUser>()
-            .Property(u => u.Id)
-            .ValueGeneratedOnAdd();
-
-        builder.Entity<ApplicationUser>()
-            .HasIndex(u => u.UniqueDisplayId)
-            .IsUnique();
-
         builder.Entity<UserLog>()
             .Property(u => u.Id)
             .ValueGeneratedOnAdd();

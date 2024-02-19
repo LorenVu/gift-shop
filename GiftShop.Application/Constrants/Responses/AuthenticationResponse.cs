@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.Security.Claims;
 using System.Text.Json.Serialization;
 
 namespace GiftShop.Application.Constrants.Responses;
@@ -19,7 +20,7 @@ public class AuthenticationResponse
 
     [JsonProperty("userId")]
     [JsonPropertyName("userId")]
-    public long UserId { get; set; }
+    public string UserId { get; set; }
 
     [JsonProperty("errorCode")]
     [JsonPropertyName("errorCode")]
@@ -36,4 +37,6 @@ public class AuthenticationResponse
     [JsonProperty("firstLogin")]
     [JsonPropertyName("firstLogin")]
     public bool FirstLogin { get; set; }
+
+    public ClaimsIdentity Claims { get; set; } = new ClaimsIdentity();
 }
