@@ -8,12 +8,16 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using GiftShop.Domain.Entities;
+using Newtonsoft.Json;
+using Org.BouncyCastle.Asn1.Ocsp;
+using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace GiftShop.Web.Controllers;
 
 [AllowAnonymous]
 public class AuthenController(
     UserManager<ApplicationUser> _userManager,
+    ISendMailService _mailService,
     IAuthenService _authenService, 
     ILogger<AuthenController> _logger, 
     IConfiguration _configuration) : Controller
@@ -51,22 +55,24 @@ public class AuthenController(
             return RedirectToAction(nameof(ForgotPasswordConfirmation));
 
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-        var callback = Url.Action(nameof(ResetPassword), "Account", new { token, email = user.Email }, Request.Scheme);
+        var callback = Url.Action(nameof(ResetPassword), "Authen", new { token, email = user.Email }, Request.Scheme);
 
-        //var message = new Message(new string[] { user.Email }, "Reset password token", callback, null);
-        //await _emailSender.SendEmailAsync(message);
+        var message = new MailContent(user.Email, "Reset password token", callback);
+        await _mailService.SendEmailAsync(message);
 
         return RedirectToAction(nameof(ForgotPasswordConfirmation));
     }
 
-    public IActionResult ForgotPasswordConfirmation()
+    public async Task<IActionResult> ForgotPasswordConfirmation()
     {
+        await Task.CompletedTask;
         return View();
     }
 
     [HttpGet]
-    public IActionResult ResetPassword(string token, string email)
+    public async Task<IActionResult> ResetPassword(string token, string email)
     {
+        await Task.CompletedTask;
         var model = new ResetPasswordRequest { Token = token, Email = email };
         return View(model);
     }
@@ -75,17 +81,37 @@ public class AuthenController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ResetPassword(ResetPasswordRequest resetPasswordModel)
     {
+        if (!ModelState.IsValid)
+            return View(resetPasswordModel);
+
+        var user = await _userManager.FindByEmailAsync(resetPasswordModel.Email);
+
+        if (user == null)
+            RedirectToAction(nameof(ResetPasswordConfirmation));
+
+        var resetPassResult = await _userManager.ResetPasswordAsync(user, resetPasswordModel.Token, resetPasswordModel.Password);
+
+        if (!resetPassResult.Succeeded)
+        {
+            foreach (var error in resetPassResult.Errors)
+            {
+                ModelState.TryAddModelError(error.Code, error.Description);
+            }
+            return View();
+        }
+
+        return RedirectToAction(nameof(ResetPasswordConfirmation));
+    }
+
+    public async Task<IActionResult> ResetPasswordConfirmation()
+    {
+        await Task.CompletedTask;
         return View();
     }
 
     [HttpPost]
     public async Task<IActionResult> BasicLogin(BasicLoginRequest request)
     {
-        if(!ModelState.IsValid)
-        {
-            return BadRequest();
-        }
-
         return Ok(await _authenService.BasicLogin(request));
     }
 
@@ -104,7 +130,9 @@ public class AuthenController(
         var result = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         var email = result?.Principal?.Identities?
             .FirstOrDefault()?.Claims.Where(c => c.Type == ClaimTypes.Email)
-               .Select(c => c.Value).SingleOrDefault();
+            .Select(c => c.Value)
+            .SingleOrDefault();
+
         if (!string.IsNullOrEmpty(email))
         {
             var response = await _authenService.SocialNetWorkLogin(email, "123");

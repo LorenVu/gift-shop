@@ -8,6 +8,8 @@ using GiftShop.Domain.Enums;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using Org.BouncyCastle.Asn1.Ocsp;
+using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
@@ -36,38 +38,21 @@ public class AuthenService(
             if (string.IsNullOrEmpty(request.Password))
                 return CreateErrorResponse(AuthenMessage.PASSWORD_CANNOT_BLANK, EErrorCommon.INVALID_PARAMS);
 
+            var signInResult = await _signInManager.PasswordSignInAsync(request.Email, request.Password, true, false);
 
-            var existUserWithEmail = await _userManager.FindByEmailAsync(request.Email);
-
-            if (existUserWithEmail is null)
+            if(!signInResult.Succeeded)
             {
-                response.Success = false;
-                response.ErrorCode = (int)EErrorCommon.NOTFOUND_ERROR;
-                response.ErrorMessage = AuthenMessage.NOT_EXIST_ACCOUNT;
+                return new AuthenticationResponse
+                {
+                    Success = false,
+                    ErrorMessage = "Login Falied",
+                    ErrorCode = (int)EErrorCommon.IDENTITY_EXCEPTION
+                };
             }
             else
             {
-                if (existUserWithEmail.PasswordHash.Equals(SecurityExtensions.MD5Hash(request.Password)))
-                {
-                    var resultUpdateUser = await _userManager.UpdateAsync(existUserWithEmail);
-
-                    if (!resultUpdateUser.Succeeded)
-                    {
-                        return new AuthenticationResponse
-                        {
-                            Success = false,
-                            ErrorMessage = String.Join("\n", resultUpdateUser.Errors),
-                            ErrorCode = (int)EErrorCommon.IDENTITY_EXCEPTION
-                        };
-                    }
-
-                    response.Claims = await GetAuthenticationResultAsync(existUserWithEmail);
-                }
-                else
-                {
-
-                    return CreateErrorResponse(AuthenMessage.PASSWORD_ISVALID, EErrorCommon.IDENTITY_EXCEPTION);
-                }
+                var existUserWithEmail = await _userManager.FindByEmailAsync(request.Email);
+                response.Claims = await GetAuthenticationResultAsync(existUserWithEmail);
             }
         }
         catch (Exception ex)
@@ -131,7 +116,6 @@ public class AuthenService(
 
         return response;
     }
-
 
     #region === Private Method ===
     async Task<ClaimsIdentity> GetAuthenticationResultAsync(ApplicationUser user)

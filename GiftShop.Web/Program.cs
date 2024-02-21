@@ -1,5 +1,8 @@
 using GiftShop.Application;
+using GiftShop.Application.Interfaces;
+using GiftShop.Application.Services;
 using GiftShop.Domain.Entities;
+using GiftShop.Domain.Utils;
 using GiftShop.Infastructure;
 using GiftShop.Infastructure.Data;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -59,6 +62,12 @@ builder.Services.AddAuthentication(options =>
     options.ClientSecret = googleAuthNSection["ClientSecret"];
 });
 #endregion
+
+#region === Mail Setting ===
+builder.Services.AddOptions();
+var mailsettings = builder.Configuration.GetSection("MailSettings");
+builder.Services.Configure<MailSettings>(mailsettings);
+#endregion === Mail Setting ===
 
 
 // Add services to the container.
