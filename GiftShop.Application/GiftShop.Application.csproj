@@ -20,8 +20,8 @@
 	    <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="8.0.0" />
     </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\GiftShop.Domain\GiftShop.Domain.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\GiftShop.Infastructure\GiftShop.Infastructure.csproj" />
+    </ItemGroup>
 
 </Project>

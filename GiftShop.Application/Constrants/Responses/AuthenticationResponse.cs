@@ -14,19 +14,21 @@ public class AuthenticationResponse
     [JsonPropertyName("refresh_token")]
     public string? RefreshToken { get; set; }
 
-    [JsonProperty("success")]
     [JsonPropertyName("success")]
     public bool Success { get; set; }
 
-    [JsonProperty("userId")]
     [JsonPropertyName("userId")]
-    public string UserId { get; set; }
+    public string? UserId { get; set; }
 
-    [JsonProperty("errorCode")]
+    [JsonPropertyName("nickName")]
+    public string? NickName { get; set; }
+
+    [JsonPropertyName("userName")]
+    public string? UserName { get; set; }
+
     [JsonPropertyName("errorCode")]
     public long ErrorCode { get; set; }
 
-    [JsonProperty("errorCodeEx")]
     [JsonPropertyName("errorCodeEx")]
     public long ErrorCodeEx { get; set; }
 
@@ -34,9 +36,6 @@ public class AuthenticationResponse
     [JsonPropertyName("errorMessage")]
     public string? ErrorMessage { get; set; }
 
-    [JsonProperty("firstLogin")]
     [JsonPropertyName("firstLogin")]
     public bool FirstLogin { get; set; }
-
-    public ClaimsIdentity Claims { get; set; } = new ClaimsIdentity();
 }

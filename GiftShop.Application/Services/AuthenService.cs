@@ -7,18 +7,23 @@ using GiftShop.Domain.Entities;
 using GiftShop.Domain.Enums;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Org.BouncyCastle.Asn1.Ocsp;
-using System;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace GiftShop.Application.Services;
 
 public class AuthenService(
+    //ApplicationDbContext _dbContext,
     UserManager<ApplicationUser> _userManager, 
     SignInManager<ApplicationUser> _signInManager,
     IHttpContextAccessor _httpContextAccessor,
+    IConfiguration _configuration,
+    TokenValidationParameters _tokenValidationParams,
     ILogger<AuthenService> _logger
     ) : IAuthenService
 {
@@ -38,21 +43,39 @@ public class AuthenService(
             if (string.IsNullOrEmpty(request.Password))
                 return CreateErrorResponse(AuthenMessage.PASSWORD_CANNOT_BLANK, EErrorCommon.INVALID_PARAMS);
 
-            var signInResult = await _signInManager.PasswordSignInAsync(request.Email, request.Password, true, false);
 
-            if(!signInResult.Succeeded)
+            var existUserWithEmail = await _userManager.FindByEmailAsync(request.Email);
+
+            if (existUserWithEmail is null)
             {
-                return new AuthenticationResponse
-                {
-                    Success = false,
-                    ErrorMessage = "Login Falied",
-                    ErrorCode = (int)EErrorCommon.IDENTITY_EXCEPTION
-                };
+                response.Success = false;
+                response.ErrorCode = (int)EErrorCommon.NOTFOUND_ERROR;
+                response.ErrorMessage = AuthenMessage.NOT_EXIST_ACCOUNT;
             }
             else
             {
-                var existUserWithEmail = await _userManager.FindByEmailAsync(request.Email);
-                response.Claims = await GetAuthenticationResultAsync(existUserWithEmail);
+                if (existUserWithEmail.PasswordHash.Equals(SecurityExtensions.MD5Hash(request.Password)))
+                {
+                    existUserWithEmail.DeviceID = request.DeviceID;
+                    var resultUpdateUser = await _userManager.UpdateAsync(existUserWithEmail);
+
+                    if (!resultUpdateUser.Succeeded)
+                    {
+                        return new AuthenticationResponse
+                        {
+                            Success = false,
+                            ErrorMessage = String.Join("\n", resultUpdateUser.Errors),
+                            ErrorCode = (int)EErrorCommon.IDENTITY_EXCEPTION
+                        };
+                    }
+
+                    response = await GetAuthenticationResultAsync(existUserWithEmail, false);
+                }
+                else
+                {
+
+                    return CreateErrorResponse(AuthenMessage.PASSWORD_ISVALID, EErrorCommon.IDENTITY_EXCEPTION);
+                }
             }
         }
         catch (Exception ex)
@@ -92,8 +115,6 @@ public class AuthenService(
                 };
 
                 var resultCreateNewUser = await _userManager.CreateAsync(newUser);
-
-                response.Claims = await GetAuthenticationResultAsync(newUser);
             }
             else
             {
@@ -104,8 +125,6 @@ public class AuthenService(
                 {
                     return CreateErrorResponse(String.Join("\n", resultUpdateUser.Errors), EErrorCommon.IDENTITY_EXCEPTION);
                 }
-
-                response.Claims = await GetAuthenticationResultAsync(existUserWithEmail);
             }
         }
         catch (Exception ex)
@@ -118,21 +137,95 @@ public class AuthenService(
     }
 
     #region === Private Method ===
-    async Task<ClaimsIdentity> GetAuthenticationResultAsync(ApplicationUser user)
+    async Task<AuthenticationResponse> GetAuthenticationResultAsync(ApplicationUser user, bool isFirstLogin)
     {
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var jwtSecret = Encoding.ASCII.GetBytes(_configuration["JwtConfig:Secret"]);
+        TimeSpan jwtTimeLife = TimeSpan.FromDays(int.Parse(_configuration["JwtConfig:TokenLifeTime"]));
+
         var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
+            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim(JwtRegisteredClaimNames.Name, user.UserName),
-            new Claim("NickName", user.NickName),
-            new Claim("Avatar", user.Avatar),
-            new Claim("UserID", user.Id.ToString()),
-            new Claim("DeviceID", user.DeviceID.ToString())
+            new Claim("nickName", user.NickName),
+            new Claim("avatar", user.Avatar),
+            new Claim("userID", user.Id.ToString()),
+            new Claim("deviceID", user.DeviceID.ToString())
         };
 
-        var claimsIdentity = new ClaimsIdentity(claims, "Login");
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Issuer = "ftech-ai",
+            Audience = "portal-api",
+            Subject = new ClaimsIdentity(claims),
+            Expires = DateTime.UtcNow.Add(jwtTimeLife),
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(jwtSecret), SecurityAlgorithms.HmacSha256Signature)
+        };
 
-        return claimsIdentity;
+        var token = tokenHandler.CreateJwtSecurityToken(tokenDescriptor);
+
+        // Gen refresh token
+        var refreshToken = await CreateRefreshTokenInstance(user.Id, token.Id);
+
+        return new AuthenticationResponse
+        {
+            UserId = user.Id,
+            UserName = user.UserName,
+            NickName = user.NickName,
+            Success = true,
+            FirstLogin = isFirstLogin,
+            Token = tokenHandler.WriteToken(token),
+            RefreshToken = refreshToken
+        };
+    }
+
+    private async Task<string> CreateRefreshTokenInstance(string userID, string tokenID)
+    {
+        try
+        {
+            RefreshToken refreshToken = new RefreshToken
+            {
+                Token = GenerateRefreshToken(),
+                UserId = userID,
+                JwtId = tokenID,
+                CreationDate = DateTime.UtcNow,
+                ExpiryDate = DateTime.UtcNow.AddDays(60),
+            };
+
+            RemoveAllRefreshTokens(userID);
+            //await _dbContext.RefreshTokens.AddAsync(refreshToken);
+            //await _dbContext.SaveChangesAsync();
+
+            return refreshToken.Token;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"AuthenService|CreateRefreshTokenInstance|Error: {ex.Message}");
+            return default;
+        }
+    }
+
+    private void RemoveAllRefreshTokens(string userId)
+    {
+        //var refreshTokens = _dbContext.RefreshTokens.Where(rf => rf.UserId == userId);
+        //if (refreshTokens != null && refreshTokens.Any())
+        //{
+        //    _dbContext.RefreshTokens.RemoveRange(refreshTokens);
+        //}
+    }
+
+    private static string GenerateRefreshToken()
+    {
+        var input = Encoding.ASCII.GetBytes(Guid.NewGuid().ToString().Replace("-", ""));
+        var key = Encoding.ASCII.GetBytes(Guid.NewGuid().ToString().Replace("-", ""));
+
+        using (HMACSHA256 hmac = new HMACSHA256(key))
+        {
+            byte[] output = hmac.ComputeHash(input);
+            return Convert.ToBase64String(output);
+        }
     }
 
     AuthenticationResponse CreateErrorResponse(string errorMessage, EErrorCommon errorCode = EErrorCommon.INVALID_PARAMS)

@@ -1,5 +1,4 @@
-﻿using GiftShop.Application;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace GiftShop.Infastructure;
 

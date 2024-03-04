@@ -18,8 +18,9 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 	</ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\GiftShop.Application\GiftShop.Application.csproj" />
-  </ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\GiftShop.Domain\GiftShop.Domain.csproj" />
+	</ItemGroup>
 
 </Project>
