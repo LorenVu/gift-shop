@@ -45,4 +45,7 @@ public class ProductDTO
 
     [JsonPropertyName("properties")]
     public List<PropertyDTO> Properties { get; set; } = new List<PropertyDTO>();
+
+    [JsonPropertyName("images")]
+    public List<ImageDTO> Images { get; set; } = new List<ImageDTO>();
 }

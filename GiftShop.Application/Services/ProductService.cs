@@ -86,6 +86,12 @@ public class ProductService(
                 p.ProductID = product.ID;
             });
 
+            product.Images.ToList().ForEach(p =>
+            {
+                p.ID = Guid.NewGuid();
+                p.ProductID = product.ID;
+            });
+
             var result = await _unitOfWork.Products.CreateProductWithProperty(product);
 
             response = result > 0
@@ -148,6 +154,8 @@ public class ProductService(
             if (productDTO is not null)
             {
                 var product = await _unitOfWork.Products.FindByIdAsync(id);
+
+                product = _mapper.Map<Product>(productDTO);
 
                 if (product is not null)
                 {

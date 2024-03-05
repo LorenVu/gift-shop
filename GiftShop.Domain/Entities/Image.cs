@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace GiftShop.Domain.Entities;
 
 [Table("Images")]
-public class Images
+public class Image
 {
     [Key]
     [Required]
@@ -13,11 +13,11 @@ public class Images
 
     [Required]
     [Column("OriginLinkImage")]
-    [StringLength(100)]
+    [StringLength(2000)]
     public string? OriginLinkImage { get; set; }
 
     [Column("LocalLinkImage")]
-    [StringLength(100)]
+    [StringLength(2000)]
     public string? LocalLinkImage { get; set; }
 
     [Required]

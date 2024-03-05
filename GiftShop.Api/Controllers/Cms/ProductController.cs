@@ -31,5 +31,9 @@ public class ProductController(
         return Ok(await _productService.CreateProduct(productDTO));
     }
 
-
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateProduct([FromRoute] Guid id, [FromBody] ProductDTO productDTO)
+    {
+        return Ok(await _productService.UpdateProduct(id, productDTO));
+    }
 }

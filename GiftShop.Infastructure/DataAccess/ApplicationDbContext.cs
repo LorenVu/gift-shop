@@ -8,12 +8,13 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
+
     }
 
     public DbSet<Brand> Brands { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<Product> Products { get; set; }
-    public DbSet<Images> ProductImages { get; set; }
+    public DbSet<Image> ProductImages { get; set; }
     public DbSet<Property> ProductProperties { get; set; }
     public DbSet<Order> Orders { get; set; }
     public DbSet<Item> OrderItems { get; set; }
@@ -23,6 +24,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Rating> Ratings { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<UserLog> UserLogs { get; set; }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        base.OnConfiguring(optionsBuilder);
+        optionsBuilder.EnableSensitiveDataLogging();
+    }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

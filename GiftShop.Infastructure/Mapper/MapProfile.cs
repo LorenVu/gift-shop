@@ -25,6 +25,11 @@ public class MapProfile : Profile
         CreateMap<PropertyDTO, Property>();
         #endregion Product Property
 
+        #region Product Image
+        CreateMap<Image, ImageDTO>();
+        CreateMap<ImageDTO, Image>();
+        #endregion Product Image
+
         #region Category
         CreateMap<Category, CategoryDTO>();
         CreateMap<CategoryDTO, Category>();

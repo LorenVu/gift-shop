@@ -17,12 +17,12 @@ public class ProductRepository : RepositoryBase<Product>, IProductRepository
 
     public async Task<Product> FindProductByIDWithProperty(Guid id)
     {
-        return await _dbSet.Include(p => p.Properties).FirstOrDefaultAsync(p => p.ID.Equals(id));
+        return await _dbSet.Include(p => p.Properties).Include(x => x.Images).FirstOrDefaultAsync(p => p.ID.Equals(id));
     }
 
     public IQueryable<Product> GetProductWithProperty(Expression<Func<Product, bool>> predicate)
     {
-        return _dbSet.Where(predicate).Include(x => x.Properties);
+        return _dbSet.Where(predicate).Include(x => x.Properties).Include(x => x.Images);
     }
 
     public async Task<int> CreateProductWithProperty(Product product)
@@ -38,6 +38,11 @@ public class ProductRepository : RepositoryBase<Product>, IProductRepository
                 if (product.Properties.Any())
                 {
                     await _dbContext.ProductProperties.AddRangeAsync(product.Properties);
+                }
+
+                if (product.Images.Any())
+                {
+                    await _dbContext.ProductImages.AddRangeAsync(product.Images);
                 }
 
                 result = await _dbContext.SaveChangesAsync();
