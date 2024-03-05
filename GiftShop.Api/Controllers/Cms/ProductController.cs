@@ -24,4 +24,6 @@ public class ProductController(
     {
         return Ok(await _productService.CreateProduct(productDTO));
     }
+
+
 }

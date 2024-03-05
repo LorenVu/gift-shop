@@ -17,9 +17,6 @@ public class ProductModel
     [JsonPropertyName("orderByDiscount")]
     public bool OrderByDiscount { get; set; }
 
-    [JsonPropertyName("orderByCurrency")]
-    public bool OrderByCurrency { get; set; }
-
     [JsonPropertyName("stock")]
     public bool Stock { get; set; }
 

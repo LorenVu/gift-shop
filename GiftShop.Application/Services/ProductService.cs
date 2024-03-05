@@ -29,23 +29,40 @@ public class ProductService(
             Expression<Func<Product, bool>> predicate = entity =>
             (string.IsNullOrEmpty(model.Name) || entity.Name.Contains(model.Name)) &&
             (string.IsNullOrEmpty(model.Code) || entity.Code.Contains(model.Code)) &&
-            (model.Stock || entity.Stock == model.Stock) &&
-            (string.IsNullOrEmpty(model.FromDate) && string.IsNullOrEmpty(model.ToDate) || 
-                entity.CreatedDate >= model.FromDate.ToDateTime("dd/MM/yyyy") && entity.CreatedDate <= model.ToDate.ToDateTime("dd/MM/yyyy"));
+            (!model.Stock || entity.Stock == model.Stock);
 
-            var brands = _unitOfWork.Products.GetAllByCondition(predicate);
+            var prorudcts = _unitOfWork.Products.GetAllByCondition(predicate);
 
-            if(model.OrderByDiscount) brands.OrderByDescending(x => x.Discount);
-            if(model.OrderByCurrency) brands.OrderByDescending(x => x.Currency);
-            if(model.OrderByPrize) brands.OrderByDescending(x => x.Prize);
+            if (model.OrderByDiscount) prorudcts = model.OrderByDiscount ? prorudcts.OrderByDescending(x => x.Discount) : prorudcts.OrderBy(x => x.Discount);
+            if (model.OrderByPrize) prorudcts = model.OrderByPrize ? prorudcts.OrderByDescending(x => x.Prize) : prorudcts.OrderBy(x => x.Prize);
 
-            await brands.ToListAsync();
+            prorudcts.Where(b => b.CreatedDate >= model.FromDate.ToDateTime("dd/MM/yyyy") && b.CreatedDate <= model.ToDate.ToDateTime("dd/MM/yyyy"));
 
-            response = await CreateResponse((int)HttpStatusCode.OK, false, CommonMessage.SUCCESSD, _mapper.Map<List<ProductDTO>>(brands), (int)EErrorCommon.OK);
+            await prorudcts.ToListAsync();
+            response = await CreateResponse((int)HttpStatusCode.OK, false, CommonMessage.SUCCESSD, _mapper.Map<List<ProductDTO>>(prorudcts), (int)EErrorCommon.OK);
         }
         catch (Exception ex)
         {
             _logger.LogError($"ProductService|GetProducts|Error: {ex.Message}");
+            response = await CreateResponse((int)HttpStatusCode.InternalServerError, false, CommonMessage.FAILED, null, (int)EErrorCommon.API_EXCEPTION);
+        }
+
+        return response;
+    }
+
+    public async Task<BaseResponse> GetProductID(Guid id)
+    {
+        var response = new BaseResponse();
+
+        try
+        {
+            var brand = await _unitOfWork.Products.FindByIdAsync(id);
+
+            response = await CreateResponse((int)HttpStatusCode.OK, false, CommonMessage.SUCCESSD, _mapper.Map<BrandDTO>(brand), (int)EErrorCommon.OK);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"ProductService|GetProductID|Error: {ex.Message}");
             response = await CreateResponse((int)HttpStatusCode.InternalServerError, false, CommonMessage.FAILED, null, (int)EErrorCommon.API_EXCEPTION);
         }
 
@@ -77,13 +94,90 @@ public class ProductService(
         }
         catch(Exception ex)
         {
-            _logger.LogError($"BrandService|CreateProduct|Error: {ex.Message}");
+            _logger.LogError($"ProductService|CreateProduct|Error: {ex.Message}");
             response = await CreateResponse((int)HttpStatusCode.InternalServerError, false, CommonMessage.FAILED, null, (int)EErrorCommon.API_EXCEPTION);
         }
 
         return response;
     }
 
+    public async Task<BaseResponse> DeleteProduct(Guid id)
+    {
+        var response = new BaseResponse();
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(id.ToString()))
+                return await CreateResponse((int)HttpStatusCode.BadRequest, false, CommonMessage.FAILED, null, (int)EErrorCommon.INVALID_PARAMS);
+
+            var product = await _unitOfWork.Products.FindByIdAsync(id);
+
+            if (product is not null)
+            {
+                product.IsDeleted = true;
+                _unitOfWork.Products.Update(product);
+
+                var result = await _unitOfWork.SaveChangeAsync();
+
+                response = result > 0
+                ? await CreateResponse((int)HttpStatusCode.OK, false, CommonMessage.SUCCESSD, null, (int)EErrorCommon.OK)
+                : await CreateResponse((int)HttpStatusCode.BadRequest, false, CommonMessage.FAILED, null, (int)EErrorCommon.SYSTEM_TIMEOUT);
+            }
+            else
+                response = await CreateResponse((int)HttpStatusCode.BadRequest, false, CommonMessage.NOTFOUND_WITH_ID, null, (int)EErrorCommon.INVALID_PARAMS);
+
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"ProductService|DeleteProduct|Error: {ex.Message}");
+            response = await CreateResponse((int)HttpStatusCode.InternalServerError, false, CommonMessage.FAILED, null, (int)EErrorCommon.API_EXCEPTION);
+        }
+
+        return response;
+    }
+
+    public async Task<BaseResponse> UpdateProduct(Guid id, ProductDTO productDTO)
+    {
+        var response = new BaseResponse();
+
+        try
+        {
+            if (productDTO is null)
+                return await CreateResponse((int)HttpStatusCode.BadRequest, false, CommonMessage.FAILED, null, (int)EErrorCommon.INVALID_PARAMS);
+
+            if (productDTO is not null)
+            {
+                var product = await _unitOfWork.Products.FindByIdAsync(id);
+
+                if (product is not null)
+                {
+                    product.ModifiedDate = DateTime.Now;
+                    product.ModifiedUser = "longvn";
+
+                    _unitOfWork.Products.Update(product);
+                    var result = await _unitOfWork.SaveChangeAsync();
+
+                    response = result > 0
+                    ? await CreateResponse((int)HttpStatusCode.OK, false, CommonMessage.SUCCESSD, null, (int)EErrorCommon.OK)
+                    : await CreateResponse((int)HttpStatusCode.BadRequest, false, CommonMessage.FAILED, null, (int)EErrorCommon.SYSTEM_TIMEOUT);
+                }
+                else
+                {
+                    response = await CreateResponse((int)HttpStatusCode.BadRequest, false, CommonMessage.NOTFOUND_WITH_ID, null, (int)EErrorCommon.INVALID_PARAMS);
+                }
+            }
+            else
+                response = await CreateResponse((int)HttpStatusCode.BadRequest, false, CommonMessage.NOTFOUND_WITH_ID, null, (int)EErrorCommon.INVALID_PARAMS);
+
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"ProductService|UpdateProduct|Error: {ex.Message}");
+            response = await CreateResponse((int)HttpStatusCode.InternalServerError, false, CommonMessage.FAILED, null, (int)EErrorCommon.API_EXCEPTION);
+        }
+
+        return response;
+    }
     #region === Private Method ===
     private async Task<BaseResponse> CreateResponse(int status, bool hasError, string message, object data, int errorCode)
     {
