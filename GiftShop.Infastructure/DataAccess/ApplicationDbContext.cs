@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace GiftShop.Infastructure.Data;
+namespace GiftShop.Infastructure.DataAccess;
 
 public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {

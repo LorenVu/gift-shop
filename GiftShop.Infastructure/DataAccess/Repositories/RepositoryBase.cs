@@ -1,5 +1,4 @@
-﻿using GiftShop.Infastructure.Data;
-using GiftShop.Infastructure.Interfaces;
+﻿using GiftShop.Infastructure.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
@@ -46,10 +45,10 @@ public abstract class RepositoryBase<T> : IRepository<T> where T : class
     public void RemoveRange(IEnumerable<T> entities)
         => _dbSet.RemoveRange(entities);
 
-    public virtual T? FindById(int id)
+    public virtual T? FindById(Guid id)
         => _dbSet.Find(id);
 
-    public async virtual Task<T?> FindByIdAsync(int id)
+    public async virtual Task<T?> FindByIdAsync(Guid id)
         => await _dbSet.FindAsync(id);
 
     public virtual T? GetSingleByCondition(Expression<Func<T, bool>> expression, string[] includes = null)
@@ -73,7 +72,7 @@ public abstract class RepositoryBase<T> : IRepository<T> where T : class
     public IQueryable<T> GetAll()
         => _dbContext.Set<T>().AsQueryable();
 
-    public async Task<IList<T>> GetAllByCondition(Expression<Func<T, bool>> predicate) 
-        => await _dbSet.Where(predicate).ToListAsync();
+    public IQueryable<T> GetAllByCondition(Expression<Func<T, bool>> predicate) 
+        => _dbSet.Where(predicate);
 
 }

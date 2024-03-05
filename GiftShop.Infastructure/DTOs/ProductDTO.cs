@@ -1,9 +1,8 @@
-﻿
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
-namespace GiftShop.Api.Models;
+namespace GiftShop.Infastructure.DTOs;
 
-public class ProductModel
+public class ProductDTO
 {
     [JsonPropertyName("id")]
     public Guid ID { get; set; }
@@ -37,4 +36,13 @@ public class ProductModel
 
     [JsonPropertyName("stock")]
     public bool Stock { get; set; }
+
+    [JsonPropertyName("categoryId")]
+    public Guid CategoryID { get; set; }
+
+    [JsonPropertyName("brandId")]
+    public Guid BrandID { get; set; }
+
+    [JsonPropertyName("properties")]
+    public List<PropertyDTO> Properties { get; set; } = new List<PropertyDTO>();
 }

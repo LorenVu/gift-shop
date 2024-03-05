@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\WEB\" />
+    <Folder Include="Controllers\Web\" />
     <Folder Include="Images\Category\" />
     <Folder Include="Images\Product\" />
   </ItemGroup>

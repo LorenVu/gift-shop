@@ -12,11 +12,11 @@ public interface IRepository<T> where T : class
     void UpdateRange(IEnumerable<T> entities);
     void Remove(T entity);
     void RemoveRange(IEnumerable<T> entities);
-    T? FindById(int id);
-    Task<T?> FindByIdAsync(int id);
+    T? FindById(Guid id);
+    Task<T?> FindByIdAsync(Guid id);
     T? GetSingleByCondition(Expression<Func<T, bool>> expression, string[] includes = null);
     void SaveChanges();
     Task<int> SaveAsync();
     IQueryable<T> GetAll();
-    Task<IList<T>> GetAllByCondition(Expression<Func<T, bool>> predicate);
+    IQueryable<T> GetAllByCondition(Expression<Func<T, bool>> predicate);
 }

@@ -23,6 +23,4 @@ public class Property
     [Required]
     [Column("ProductId")]
     public Guid ProductID { get; set; }
-
-    public Product Product { get; set; } = new Product();
 }

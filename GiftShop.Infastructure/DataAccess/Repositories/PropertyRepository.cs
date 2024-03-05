@@ -1,5 +1,4 @@
 ﻿using GiftShop.Domain.Entities;
-using GiftShop.Infastructure.Data;
 using GiftShop.Infastructure.Interfaces;
 
 namespace GiftShop.Infastructure.DataAccess.Repositories;

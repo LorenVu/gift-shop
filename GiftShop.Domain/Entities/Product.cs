@@ -20,8 +20,8 @@ public class Product : BaseEntity
     [StringLength(100)]
     public string? Code { get; set; }
 
+    [MaxLength(2000)]
     [Column("Description")]
-    [StringLength(255)]
     public string? Description { get; set; }
 
     [Required]
@@ -58,9 +58,11 @@ public class Product : BaseEntity
     [Column("BrandId")]
     public Guid BrandID { get; set; }
 
-    public Category Categories { get; set; } = new Category();
+    //public Category Categories { get; set; } = new Category();
 
-    public Brand Brands { get; set; } = new Brand();
+    //public Brand Brands { get; set; } = new Brand();
+
+    public ICollection<Property> Properties { get; set; } = new List<Property>();
 
     public ICollection<Item> Items { get; set; } = new List<Item>();
 }

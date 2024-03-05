@@ -14,72 +14,74 @@ using System.Net;
 
 namespace GiftShop.Application.Services;
 
-public class BrandService(
-    ILogger<BrandService> _logger, 
+public class CategoryService(
+    ILogger<CategoryService> _logger, 
     IMapper _mapper, 
-    IUnitOfWork _unitOfWork) : IBrandService
+    IUnitOfWork _unitOfWork) : ICategoryService
 {
-    public async Task<BaseResponse> GetBrands(string name, string code)
+    public async Task<BaseResponse> GetCategories(CategoryModel model)
     {
         var response = new BaseResponse();
 
         try
         {
-            Expression<Func<Brand, bool>> predicate = entity =>
-            (string.IsNullOrEmpty(name) || entity.Name.Contains(name)) &&
-            (string.IsNullOrEmpty(code) || entity.Code.Contains(code));
+            Expression<Func<Category, bool>> predicate = entity =>
+            (string.IsNullOrEmpty(model.Name) || entity.Name.Contains(model.Name)) &&
+            (string.IsNullOrEmpty(model.Code) || entity.Code.Contains(model.Code)); //&&
+            //(model.IsDeleted != null || entity.IsDeleted == model.IsDeleted) &&
+            //(model.Status != null || entity.Status == model.Status);
 
-            var brands = _unitOfWork.Brands.GetAllByCondition(predicate);
-            await brands.ToListAsync();
+            var categories = _unitOfWork.Categories.GetAllByCondition(predicate);
+            await categories.ToListAsync();
 
-            response = await CreateResponse((int)HttpStatusCode.OK, false, CommonMessage.SUCCESSD, _mapper.Map<List<BrandDTO>>(brands), (int)EErrorCommon.OK);
+            response = await CreateResponse((int)HttpStatusCode.OK, false, CommonMessage.SUCCESSD, _mapper.Map<List<CategoryDTO>>(categories), (int)EErrorCommon.OK);
         }
         catch (Exception ex)
         {
-            _logger.LogError($"BrandService|GetBrands|Error: {ex.Message}");
+            _logger.LogError($"CategoryService|GetCategories|Error: {ex.Message}");
             response = await CreateResponse((int)HttpStatusCode.InternalServerError, false, CommonMessage.FAILED, null, (int)EErrorCommon.API_EXCEPTION);
         }
 
         return response;
     }
 
-    public async Task<BaseResponse> GetBrandByID(Guid id)
+    public async Task<BaseResponse> GetCategoriesByID(Guid id)
     {
         var response = new BaseResponse();
 
         try
         {
-            var brand = await _unitOfWork.Brands.FindByIdAsync(id);
+            var brand = await _unitOfWork.Categories.FindByIdAsync(id);
 
-            response = await CreateResponse((int)HttpStatusCode.OK, false, CommonMessage.SUCCESSD, _mapper.Map<BrandDTO>(brand), (int)EErrorCommon.OK);
+            response = await CreateResponse((int)HttpStatusCode.OK, false, CommonMessage.SUCCESSD, _mapper.Map<CategoryDTO>(brand), (int)EErrorCommon.OK);
         }
         catch (Exception ex)
         {
-            _logger.LogError($"BrandService|GetBrands|Error: {ex.Message}");
+            _logger.LogError($"CategoryService|GetCategoriesByID|Error: {ex.Message}");
             response = await CreateResponse((int)HttpStatusCode.InternalServerError, false, CommonMessage.FAILED, null, (int)EErrorCommon.API_EXCEPTION);
         }
 
         return response;
     }
 
-    public async Task<BaseResponse> CreateBrand(BrandModel brandModel)
+    public async Task<BaseResponse> CreateCategory(CategoryDTO categoryDTO)
     {
         var response = new BaseResponse();
 
         try
         {
-            if(string.IsNullOrEmpty(brandModel.Name))
+            if(string.IsNullOrEmpty(categoryDTO.Name))
                 return await CreateResponse((int)HttpStatusCode.BadRequest, false, CommonMessage.FAILED, null, (int)EErrorCommon.INVALID_PARAMS);
 
-            if (string.IsNullOrEmpty(brandModel.Code))
+            if (string.IsNullOrEmpty(categoryDTO.Code))
                 return await CreateResponse((int)HttpStatusCode.BadRequest, false, CommonMessage.FAILED, null, (int)EErrorCommon.INVALID_PARAMS);
 
-            var brand = _mapper.Map<Brand>(brandModel);
-            brand.ID = Guid.NewGuid();
-            brand.CreatedDate = DateTime.Now;
-            brand.ModifiedDate = DateTime.Now;
+            var category = _mapper.Map<Category>(categoryDTO);
+            category.ID = Guid.NewGuid();
+            category.CreatedDate = DateTime.Now;
+            category.ModifiedDate = DateTime.Now;
 
-            await _unitOfWork.Brands.AddAsync(brand);
+            await _unitOfWork.Categories.AddAsync(category);
             var result = await _unitOfWork.SaveChangeAsync();
 
             response = result > 0
@@ -95,7 +97,7 @@ public class BrandService(
         return response;
     }
 
-    public async Task<BaseResponse> DeleteBrand(Guid id)
+    public async Task<BaseResponse> DeleteCategory(Guid id)
     {
         var response = new BaseResponse();
 
@@ -104,12 +106,12 @@ public class BrandService(
             if(string.IsNullOrWhiteSpace(id.ToString()))
                 return await CreateResponse((int)HttpStatusCode.BadRequest, false, CommonMessage.FAILED, null, (int)EErrorCommon.INVALID_PARAMS);
 
-            var brand = await _unitOfWork.Brands.FindByIdAsync(id);
+            var category = await _unitOfWork.Categories.FindByIdAsync(id);
             
-            if(brand is not null)
+            if(category is not null)
             {
-                brand.IsDeleted = true;
-                _unitOfWork.Brands.Update(brand);
+                category.IsDeleted = true;
+                _unitOfWork.Categories.Update(category);
 
                 var result = await _unitOfWork.SaveChangeAsync();
 
@@ -130,27 +132,27 @@ public class BrandService(
         return response;
     }
 
-    public async Task<BaseResponse> UpdateBrand(Guid id, BrandModel brandModel)
+    public async Task<BaseResponse> UpdateCategory(Guid id, CategoryDTO categoryDTO)
     {
         var response = new BaseResponse();
 
         try
         {
-            if (brandModel is null)
+            if (categoryDTO is null)
                 return await CreateResponse((int)HttpStatusCode.BadRequest, false, CommonMessage.FAILED, null, (int)EErrorCommon.INVALID_PARAMS);
 
-            if (brandModel is not null)
+            if (categoryDTO is not null)
             {
-                var brand = await _unitOfWork.Brands.FindByIdAsync(id);
+                var category = await _unitOfWork.Categories.FindByIdAsync(id);
 
-                if(brand is not null)
+                if(category is not null)
                 {
-                    brand.Name = brandModel.Name;
-                    brand.Code = brandModel.Code;
-                    brand.ModifiedDate = DateTime.Now;
-                    brand.ModifiedUser = "longvn";
+                    category.Name = categoryDTO.Name;
+                    category.Code = categoryDTO.Code;
+                    category.ModifiedDate = DateTime.Now;
+                    category.ModifiedUser = "longvn";
 
-                    _unitOfWork.Brands.Update(brand);
+                    _unitOfWork.Categories.Update(category);
                     var result = await _unitOfWork.SaveChangeAsync();
 
                     response = result > 0

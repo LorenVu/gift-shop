@@ -1,11 +1,10 @@
-using GiftShop.Api.Mapper;
 using GiftShop.Application;
 using GiftShop.Domain.Commons.Extentions.Service;
 using GiftShop.Domain.Entities;
 using GiftShop.Infastructure;
-using GiftShop.Infastructure.Data;
 using GiftShop.Infastructure.DataAccess;
 using GiftShop.Infastructure.Interfaces;
+using GiftShop.Infastructure.Mapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -42,7 +41,7 @@ builder.Services.Configure<DataProtectionTokenProviderOptions>(opt =>
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConnection"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("SqlConnection"));
 });
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(opt =>
@@ -64,7 +63,7 @@ builder.Services.Configure<DataProtectionTokenProviderOptions>(opt =>
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMemoryCache();
 
-var connectionString = builder.Configuration.GetConnectionString("IdentityConnection");
+var connectionString = builder.Configuration.GetConnectionString("SqlConnection");
 if (!string.IsNullOrEmpty(connectionString))
 {
     builder.Services.AddHealthChecks()

@@ -1,5 +1,4 @@
-﻿using GiftShop.Infastructure.Data;
-using GiftShop.Infastructure.Interfaces;
+﻿using GiftShop.Infastructure.Interfaces;
 
 namespace GiftShop.Infastructure.DataAccess;
 
