@@ -19,6 +19,12 @@ public class ProductController(
         return Ok(await _productService.GetProducts(model));
     }
 
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetProductByID([FromRoute] Guid id)
+    {
+        return Ok(await _productService.GetProductByID(id));
+    }
+
     [HttpPost]
     public async Task<IActionResult> CreateProduct([FromBody] ProductDTO productDTO)
     {

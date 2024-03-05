@@ -1,6 +1,8 @@
 ﻿using GiftShop.Domain.Entities;
 using GiftShop.Infastructure.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Linq.Expressions;
 
 namespace GiftShop.Infastructure.DataAccess.Repositories;
 
@@ -11,6 +13,16 @@ public class ProductRepository : RepositoryBase<Product>, IProductRepository
     public ProductRepository(ApplicationDbContext dataContext, ILogger<ProductRepository> logger) : base(dataContext)
     {
         _logger = logger;
+    }
+
+    public async Task<Product> FindProductByIDWithProperty(Guid id)
+    {
+        return await _dbSet.Include(p => p.Properties).FirstOrDefaultAsync(p => p.ID.Equals(id));
+    }
+
+    public IQueryable<Product> GetProductWithProperty(Expression<Func<Product, bool>> predicate)
+    {
+        return _dbSet.Where(predicate).Include(x => x.Properties);
     }
 
     public async Task<int> CreateProductWithProperty(Product product)

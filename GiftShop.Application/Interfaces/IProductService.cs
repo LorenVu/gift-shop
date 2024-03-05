@@ -7,7 +7,7 @@ namespace GiftShop.Application.Interfaces;
 public interface IProductService
 {
     Task<BaseResponse> GetProducts(ProductModel model);
-    Task<BaseResponse> GetProductID(Guid id);
+    Task<BaseResponse> GetProductByID(Guid id);
     Task<BaseResponse> CreateProduct(ProductDTO productDto);
     Task<BaseResponse> DeleteProduct(Guid id);
     Task<BaseResponse> UpdateProduct(Guid id, ProductDTO productDTO);

@@ -31,7 +31,7 @@ public class ProductService(
             (string.IsNullOrEmpty(model.Code) || entity.Code.Contains(model.Code)) &&
             (!model.Stock || entity.Stock == model.Stock);
 
-            var prorudcts = _unitOfWork.Products.GetAllByCondition(predicate);
+            var prorudcts = _unitOfWork.Products.GetProductWithProperty(predicate);
 
             if (model.OrderByDiscount) prorudcts = model.OrderByDiscount ? prorudcts.OrderByDescending(x => x.Discount) : prorudcts.OrderBy(x => x.Discount);
             if (model.OrderByPrize) prorudcts = model.OrderByPrize ? prorudcts.OrderByDescending(x => x.Prize) : prorudcts.OrderBy(x => x.Prize);
@@ -50,15 +50,15 @@ public class ProductService(
         return response;
     }
 
-    public async Task<BaseResponse> GetProductID(Guid id)
+    public async Task<BaseResponse> GetProductByID(Guid id)
     {
         var response = new BaseResponse();
 
         try
         {
-            var brand = await _unitOfWork.Products.FindByIdAsync(id);
+            var product = await _unitOfWork.Products.FindProductByIDWithProperty(id);
 
-            response = await CreateResponse((int)HttpStatusCode.OK, false, CommonMessage.SUCCESSD, _mapper.Map<BrandDTO>(brand), (int)EErrorCommon.OK);
+            response = await CreateResponse((int)HttpStatusCode.OK, false, CommonMessage.SUCCESSD, _mapper.Map<ProductDTO>(product), (int)EErrorCommon.OK);
         }
         catch (Exception ex)
         {
