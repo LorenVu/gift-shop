@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
+using static System.Net.Mime.MediaTypeNames;
 namespace GiftShop.Domain.Entities;
 
 public class ApplicationUser : IdentityUser
@@ -21,4 +22,6 @@ public class ApplicationUser : IdentityUser
 
     [StringLength(255)]
     public string Address { get; set; } = string.Empty;
+
+    public virtual ICollection<Friend> Friends { get; set; } = new HashSet<Friend>();
 }

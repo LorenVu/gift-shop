@@ -1,6 +1,8 @@
 ﻿using GiftShop.Domain.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Emit;
+using System.Reflection.Metadata;
 
 namespace GiftShop.Infastructure.DataAccess;
 
@@ -12,6 +14,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     }
 
     public DbSet<Brand> Brands { get; set; }
+    public DbSet<Friend> Friends { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<Product> Products { get; set; }
     public DbSet<Image> ProductImages { get; set; }
@@ -33,6 +36,13 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
+        builder.Entity<ApplicationUser>()
+            .HasMany(u => u.Friends)
+            .WithOne(f => f.User)
+            .HasForeignKey(f => f.FriendID)
+            .HasPrincipalKey(u => u.Id)
+            .IsRequired();
+
         builder.Entity<UserLog>()
             .Property(u => u.Id)
             .ValueGeneratedOnAdd();
