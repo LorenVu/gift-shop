@@ -1,10 +1,12 @@
 using GiftShop.Application;
 using GiftShop.Domain.Commons.Extentions.Service;
+using GiftShop.Domain.Commons.Helpers;
 using GiftShop.Domain.Entities;
 using GiftShop.Infastructure;
 using GiftShop.Infastructure.DataAccess;
 using GiftShop.Infastructure.Interfaces;
 using GiftShop.Infastructure.Mapper;
+using GiftShop.Infastructure.SignalR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -35,6 +37,7 @@ builder.Services.AddRepositories();
 builder.Services.AddServices();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddAuthenticationConfig(builder.Configuration);
+builder.Services.AddSignalR();
 
 builder.Services.Configure<DataProtectionTokenProviderOptions>(opt =>
    opt.TokenLifespan = TimeSpan.FromHours(2));
@@ -70,7 +73,9 @@ if (!string.IsNullOrEmpty(connectionString))
         .AddSqlServer(connectionString, timeout: TimeSpan.FromSeconds(5));
 }
 
+
 var app = builder.Build();
+HttpHelpers.Configure(app.Services.GetRequiredService<IHttpContextAccessor>());
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -80,9 +85,16 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors(x => x
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .SetIsOriginAllowed(origin => true)
+        .AllowCredentials());
 
+app.UseAuthorization();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<ChatHub>("/chat-hub");
 
 app.Run();

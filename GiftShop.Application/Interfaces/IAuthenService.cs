@@ -6,5 +6,6 @@ namespace GiftShop.Application.Interfaces;
 public interface IAuthenService
 {
     Task<AuthenticationResponse> BasicLogin(BasicLoginRequest request);
+    Task<AuthenticationResponse> RegisterAccount(RegisterAccountRequest request);
     Task<AuthenticationResponse> SocialNetWorkLogin(string email, string deviceID);
 }

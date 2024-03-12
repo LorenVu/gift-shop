@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
-using static System.Net.Mime.MediaTypeNames;
 namespace GiftShop.Domain.Entities;
 
 public class ApplicationUser : IdentityUser

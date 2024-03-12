@@ -136,7 +136,90 @@ public class AuthenService(
         return response;
     }
 
+    public async Task<AuthenticationResponse> RegisterAccount(RegisterAccountRequest request)
+    {
+        var response = new AuthenticationResponse();
+
+        try
+        {
+            if (String.IsNullOrEmpty(request.Email))
+                return CreateErrorResponse(AuthenMessage.EMAIL_CANNOT_BLANK, EErrorCommon.INVALID_PARAMS);
+
+            if (String.IsNullOrEmpty(request.Password) && String.IsNullOrEmpty(request.ReEnterPassword))
+                return CreateErrorResponse(AuthenMessage.PASSWORD_CANNOT_BLANK, EErrorCommon.INVALID_PARAMS);
+
+            if (String.IsNullOrEmpty(request.DeviceID))
+                return CreateErrorResponse(AuthenMessage.DEVICE_ID_CANNOT_BLANK, EErrorCommon.INVALID_PARAMS);
+
+            //if (string.Equals(request.Password, request.ReEnterPassword, StringComparison.CurrentCultureIgnoreCase))
+            //{
+            //    return new AuthenticationResponse
+            //    {
+            //        Success = false,
+            //        ErrorMessage = "Re-enter password is not the same",
+            //        ErrorCode = (int)EErrorCommon.INVALID_PARAMS
+            //    };
+            //}
+
+            if (request.Password != request.ReEnterPassword)
+                return CreateErrorResponse(AuthenMessage.PASSWORD_NOT_MATCH, EErrorCommon.INVALID_PARAMS);
+
+            var existUserWithEmail = await _userManager.FindByEmailAsync(request.Email);
+
+            if (existUserWithEmail is null)
+            {
+                var newUser = new ApplicationUser
+                {
+                    //Avatar = avatarUrl,
+                    Avatar = "",
+                    UserName = request.Email.Split("@")[0],
+                    NickName = request.Email.Split("@")[0],
+                    Email = request.Email,
+                    PhoneNumber = request.PhoneNumber,
+                    DeviceID = request.DeviceID,
+                    PasswordHash = SecurityExtensions.MD5Hash(request.Password)
+                };
+
+                response = await CreateAccount(newUser);
+            }
+            else
+                return CreateNotFoundResponse($"Exist account with email: {request.Email}");
+
+        }
+        catch (Exception ex)
+        {
+            response.Success = false;
+            _logger.LogError(ex.Message, ex);
+            return CreateErrorResponse("", EErrorCommon.API_EXCEPTION);
+        }
+
+        return response;
+    }
+
     #region === Private Method ===
+    private async Task<AuthenticationResponse> CreateAccount(ApplicationUser user)
+    {
+        var resultCreateNewUser = await _userManager.CreateAsync(user);
+        if (!resultCreateNewUser.Succeeded)
+        {
+            return new AuthenticationResponse
+            {
+                Success = false,
+                ErrorMessage = String.Join("\n", resultCreateNewUser.Errors),
+                ErrorCode = (int)EErrorCommon.IDENTITY_EXCEPTION
+            };
+        }
+        else
+            return new AuthenticationResponse
+            {
+                Success = true,
+                UserId = user.Id,
+                UserName = user.UserName,
+                NickName = user.NickName,
+                FirstLogin = true,
+            };
+    }
+
     async Task<AuthenticationResponse> GetAuthenticationResultAsync(ApplicationUser user, bool isFirstLogin)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
