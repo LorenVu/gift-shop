@@ -21,4 +21,6 @@ public class ApplicationUser : IdentityUser
 
     [StringLength(255)]
     public string Address { get; set; } = string.Empty;
+
+    public virtual ICollection<Friend> Friends { get; set; } = new HashSet<Friend>();
 }

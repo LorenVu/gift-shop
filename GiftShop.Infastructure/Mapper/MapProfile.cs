@@ -35,6 +35,10 @@ public class MapProfile : Profile
         CreateMap<CategoryDTO, Category>();
         #endregion Category
 
+        #region User
+        CreateMap<ApplicationUser, UserDTO>();
+        CreateMap<ApplicationUser, UserViewModel>();
+        #endregion User
 
     }
 }

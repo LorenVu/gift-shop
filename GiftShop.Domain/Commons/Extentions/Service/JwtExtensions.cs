@@ -34,6 +34,18 @@ public static class JwtExtensions
             tokenOptions.SaveToken = true;
             tokenOptions.RequireHttpsMetadata = false;
             tokenOptions.TokenValidationParameters = tokenValidationParams;
+            tokenOptions.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    var accessToken = context.Request.Query["access_token"];
+                    if (!string.IsNullOrEmpty(accessToken))
+                    {
+                        context.Token = accessToken;
+                    }
+                    return Task.CompletedTask;
+                }
+            };
         });
     }
 }
