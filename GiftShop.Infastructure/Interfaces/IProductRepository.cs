@@ -7,5 +7,6 @@ public interface IProductRepository : IRepository<Product>
 {
     Task<Product> FindProductByIDWithProperty(Guid id);
     IQueryable<Product> GetProductWithProperty(Expression<Func<Product, bool>> predicate);
-    Task<int> CreateProductWithProperty(Product product);
+    Task<int> CreateProduct(Product product);
+    Task<int> UpdateProduct(Product product);
 }

@@ -5,8 +5,9 @@ namespace GiftShop.Infastructure.DTOs;
 
 public class PropertyDTO
 {
+    [JsonIgnore]
     [JsonPropertyName("id")]
-    public Guid ID { get; set; }
+    public Guid ID { get; set; } = Guid.Empty;
 
     [JsonPropertyName("name")]
     public string? Name { get; set; }

@@ -10,6 +10,7 @@ using GiftShop.Infastructure.Interfaces;
 using GiftShop.Infastructure.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
 
@@ -92,7 +93,7 @@ public class ProductService(
                 p.ProductID = product.ID;
             });
 
-            var result = await _unitOfWork.Products.CreateProductWithProperty(product);
+            var result = await _unitOfWork.Products.CreateProduct(product);
 
             response = result > 0
                 ? await CreateResponse((int)HttpStatusCode.OK, false, CommonMessage.SUCCESSD, null, (int)EErrorCommon.OK)
@@ -153,7 +154,7 @@ public class ProductService(
 
             if (productDTO is not null)
             {
-                var product = await _unitOfWork.Products.FindByIdAsync(id);
+                var product = await _unitOfWork.Products.FindProductByIDWithProperty(id);
 
                 product = _mapper.Map<Product>(productDTO);
 
@@ -162,8 +163,10 @@ public class ProductService(
                     product.ModifiedDate = DateTime.Now;
                     product.ModifiedUser = "longvn";
 
-                    _unitOfWork.Products.Update(product);
-                    var result = await _unitOfWork.SaveChangeAsync();
+                    //_unitOfWork.Products.Update(product);
+                    //_unitOfWork.Properties.UpdateRange(product.Properties);
+
+                    var result = await _unitOfWork.Products.UpdateProduct(product);
 
                     response = result > 0
                     ? await CreateResponse((int)HttpStatusCode.OK, false, CommonMessage.SUCCESSD, null, (int)EErrorCommon.OK)

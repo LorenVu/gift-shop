@@ -4,6 +4,7 @@ namespace GiftShop.Infastructure.DTOs;
 
 public class ImageDTO
 {
+    [JsonIgnore]
     [JsonPropertyName("id")]
     public Guid ID { get; set; }
 
@@ -13,6 +14,6 @@ public class ImageDTO
     [JsonPropertyName("localLinkImage")]
     public string? LocalLinkImage { get; set; }
 
-    [JsonPropertyName("productID")]
+    [JsonPropertyName("productId")]
     public Guid ProductID { get; set; }
 }
